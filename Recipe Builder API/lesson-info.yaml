@@ -1,0 +1,7 @@
+type: framework
+content:
+- The first recipe
+- Several recipes
+- Store recipes
+- Filter, sort, and update
+current_task: 0

@@ -1,0 +1,222 @@
+type: edu
+files:
+- name: tests.py
+  visible: false
+  text: |
+    import asyncio
+    import copy
+    from hstest import FlaskTest, CheckResult, WrongAnswer
+    from hstest import dynamic_test
+    from hstest.dynamic.security.exit_handler import ExitHandler
+    import xml.etree.ElementTree as ET
+    import json
+    from pip._vendor import requests
+
+
+    class Recipe_info:
+        title = ''
+        ingredients = []
+        directions = ''
+
+        def from_json(self, recipe: str):
+            recipe_json = json.loads(recipe)
+            self.title = recipe_json['title']
+            self.directions = recipe_json['directions']
+            self.ingredients = []
+            for ingredient in recipe_json['ingredients']:
+                self.ingredients.append(ingredient)
+
+        def to_json(self):
+            recipe_dict = copy.deepcopy(self).__dict__
+            recipe_dict['ingredient'] = []
+            for ingredient in self.ingredients:
+                recipe_dict['ingredient'].append(ingredient)
+            del recipe_dict['ingredients']
+            recipe_dict['ingredients'] = recipe_dict.pop('ingredient')
+            jsonStr = json.dumps(recipe_dict)
+            return jsonStr
+
+        def get_ingredients_url_parameters(self):
+            return "|".join([ingredient for ingredient in self.ingredients])
+
+        def __str__(self):
+            return self.to_json()
+
+        def __init__(self, recipe=None):
+            if recipe is None:
+                return
+            if isinstance(recipe, str):
+                self.from_json(recipe)
+
+
+    def recipes_from_xml():
+        list_recipes = []
+        root_el = ET.fromstring(
+            '<recipes><recipe title="All-Day-Long Crockpot Beef" directions=" Cut beef roast into serving-sized portions.   Use more beef if you need more than 6 servings.   Brown beef in a bit of vegetable oil, although you can skip this step if rushed for time. Slice onion and separate into rings.   Dice the peeled carrots, dice the celery and slice the peppers into thin strips or circles.   Place these into bottom of crockpot.   Sprinkle the beef pieces with fresh ground black pepper, minced garlic and the onion soup mix.   Place on top of the vegetables. Mix the steak sauce and worcestershire sauce in a small  Pour this over the meat. Turn the crockpot to High for 30 minutes, or, if you\'re in a hurry, skip this step.   Turn to Low, cover and cook for 7 to 9 hours. Keep the crockpot covered as much as possible throughout cooking time.   A crockpot can be used to cook this type of meal for a varied amount of time, depending on your schedule.  It is not important that you take the meat and vegetables out at a specific amount of time.  One or two hours either way usually makes no difference. When ready to serve, dip meat and vegetables out of pot with a slotted spoon.  Use the liquid as is or turn crockpot to High and thicken liquid with a little "><ingredients><ingredient amount="907.2" measure="g">beef</ingredient><ingredient amount="10" measure="ml">black pepper</ingredient><ingredient amount="2" measure="each">garlic</ingredient><ingredient amount="2" measure="each">onion soup mix</ingredient><ingredient amount="10" measure="ml">worcestershire sauce</ingredient><ingredient amount="5" measure="ml">steak sauce</ingredient><ingredient amount="3" measure="each">carrots</ingredient><ingredient amount="2" measure="each">celery</ingredient><ingredient amount="1" measure="each">sweet red bell peppers</ingredient><ingredient amount="1" measure="each">onions</ingredient><ingredient amount="118" measure="ml">water</ingredient><ingredient amount="118" measure="ml">tomato juice</ingredient></ingredients></recipe><recipe title="All-Day-Long Potato Soup" directions=" Place the first six ingredients in your slow cooker and cook all day on the low setting. About &#189;  to one hour before serving; add milk and  Once the soup starts to thicken, it is ready to serve. This simple slow cooker potato soup from scratch is a mainstay in our family.  We frequently vary the recipe as follows: Stir in &#188; pound (125 g) of shredded cheese just prior to serving for cheese potato soup. A can of evaporated milk may be substituted for the regular milk. When serving, top with crispy  Combine cheese and bacon as noted in both variations above."><ingredients><ingredient amount="680.4" measure="g">potatoes</ingredient><ingredient amount="1" measure="each">onions</ingredient><ingredient amount="15" measure="ml">butter</ingredient><ingredient amount="1" measure="each">vegetable stock cubes</ingredient><ingredient amount="15" measure="ml">parsley leaves</ingredient><ingredient amount="710" measure="ml">water</ingredient><ingredient amount="237" measure="ml">milk</ingredient><ingredient amount="59" measure="ml">all-purpose flour</ingredient></ingredients></recipe><recipe title="Good As Gold Chicken (Like Kfc\'s and Boston\'s)" directions=" Mix ingredients (except chicken) in a saucepan and warm just to melt honey. Arrange chicken breast-side-up in a square  Bake uncovered at 400 degrees about 35 to 40 minutes. Basting pieces without turning them, 3 or 4 times during baking. Immediately upon removing from oven, seal baking dish or pan tightly in foil and let stand 15 to 20 minutes before serving."><ingredients><ingredient amount="59" measure="ml">vegetable oil</ingredient><ingredient amount="15" measure="ml">honey</ingredient><ingredient amount="15" measure="ml">lime juice</ingredient><ingredient amount="1.3" measure="ml">paprika</ingredient><ingredient amount="1" measure="x">seasoned salt</ingredient><ingredient amount="4" measure="each">chicken breasts</ingredient></ingredients></recipe><recipe title="100% Parmesan Chicken" directions=" Heat  Dip chicken in margarine; coat with combined remaining ingredients. Place in prepared pan. Bake 20 to 25 minutes or until tender. Substitute &#8539; to &#188; teaspoon ground red pepper for black pepper."><ingredients><ingredient amount="6" measure="each">chicken breasts</ingredient><ingredient amount="30" measure="ml">butter</ingredient><ingredient amount="118" measure="ml">Parmesan cheese</ingredient><ingredient amount="59" measure="ml">bread crumbs</ingredient><ingredient amount="5" measure="ml">oregano</ingredient><ingredient amount="5" measure="ml">parsley flakes</ingredient><ingredient amount="1.3" measure="ml">paprika</ingredient><ingredient amount="1.3" measure="ml">salt</ingredient><ingredient amount="1.3" measure="ml">black pepper</ingredient></ingredients></recipe><recipe title="10 Minute Sichuan/Szechuan Chicken" directions=" Cut chicken into cubes.  Lightly toss with cornstarch in bag to coat.  Heat oil in skillet or wok, medium-high heat. Stir-fry chicken and garlic until lightly browned.  Add soy sauce, vinegar, sugar and water. Cover and cook 3 minutes or until chicken is cooked through.  Add green onions and cayenne; cook uncovered about 2 minutes longer."><ingredients><ingredient amount="4" measure="each">chicken breasts</ingredient><ingredient amount="23" measure="ml">vinegar</ingredient><ingredient amount="45" measure="ml">cornstarch</ingredient><ingredient amount="5" measure="ml">sugar</ingredient><ingredient amount="15" measure="ml">vegetable oil</ingredient><ingredient amount="59" measure="ml">water</ingredient><ingredient amount="3" measure="cloves">garlic</ingredient><ingredient amount="6" measure="each">scallions, spring or green onions</ingredient><ingredient amount="75" measure="ml">soy sauce, tamari</ingredient><ingredient amount="0.6" measure="ml">cayenne pepper</ingredient></ingredients></recipe></recipes>')
+        for recipe_el in root_el:
+            recipe = Recipe_info()
+            recipe.title = recipe_el.attrib['title']
+            recipe.directions = recipe_el.attrib['directions']
+            ingredients = recipe_el.find("ingredients")
+            recipe.ingredients = []
+            for ingredient_el in ingredients:
+                recipe.ingredients.append(ingredient_el.text)
+            list_recipes.append(recipe)
+        return list_recipes
+
+
+    class FlaskProjectTest(FlaskTest):
+        source = 'app'
+        list_recipes = []
+        wrong_answers = \
+            [
+                "File 'recipes.xml' not exists or incorrect format, please reload the project",  # 0
+                "{} route should return code 200, if the recipe data is correct, now status code is {}",  # 1
+                "{} {} key should be in the json response",  # 2
+                "{} response should not be empty",  # 3
+                "{} route should return '{}' if no recipes added, now '{}'",  # 4
+                "{} route should return '{}' If not enough ingredients, now '{}'",  # 5
+                "{} route should return json with 3 keys, now '{}'",  # 6
+                "{} route should return correct json response, now response: '{}'",  # 7
+                "{} route should return code 400, if the recipe post data is incorrect or empty, now status code is {}",
+                # 8
+            ]
+        links = \
+            [
+                "{}api/recipe",  # 0
+                "{}api/recipe?ingredients={}",  # 1
+
+            ]
+        strings = \
+            [
+                "No recipe here yet",  # 0
+                "No recipe for these ingredients"  # 1
+            ]
+        json_responses = \
+            [
+                {"error": strings[0]},
+                {"error": strings[1]}
+            ]
+
+        def my_init(self):
+            try:
+                self.list_recipes = recipes_from_xml()
+            except:
+                raise WrongAnswer(self.wrong_answers[0])
+
+        def __init__(self, source_name: str = ''):
+            super().__init__(source_name)
+            self.my_init()
+
+        def check_recipe_str(self, recipe: Recipe_info, content: str, recipe_added, enough_ingredients):
+            try:  # check correct json format
+                recipe_dict = json.loads(content)
+            except:
+                raise WrongAnswer(self.wrong_answers[7].format(self.links[1].format("GET /", "..."), content))
+            if recipe_added and enough_ingredients:
+                if not content:
+                    raise WrongAnswer(self.wrong_answers[3].format(self.links[1].format("GET /", "...")))
+                if "title" in recipe_dict.keys() == False:
+                    raise WrongAnswer(self.wrong_answers[2].format(self.links[1].format("GET /", "..."), "title"))
+                if "directions" in recipe_dict.keys() == False:
+                    raise WrongAnswer(self.wrong_answers[2].format(self.links[1].format("GET /", "..."), "directions"))
+                if "ingredients" in recipe_dict.keys() == False:
+                    raise WrongAnswer(self.wrong_answers[2].format(self.links[1].format("GET /", "..."), "ingredients"))
+                if len(recipe_dict.keys()) > 3:
+                    raise WrongAnswer(
+                        self.wrong_answers[6].format(self.links[1].format("GET /", "..."), len(recipe_dict.keys())))
+            elif recipe_added == False:
+                if recipe_dict != self.json_responses[0]:
+                    raise WrongAnswer(
+                        self.wrong_answers[4].format(self.links[1].format("GET /", "..."), str(self.json_responses[0]),
+                                                     content))
+            elif recipe_added and enough_ingredients == False:
+                if recipe_dict != self.json_responses[1]:
+                    raise WrongAnswer(
+                        self.wrong_answers[5].format(self.links[1].format("GET /", "..."), str(self.json_responses[1]),
+                                                     content))
+
+        async def test_get_recipe(self, recipe: Recipe_info, recipe_added=True, enough_ingredients=True):
+            r = requests.get(self.links[1].format(self.get_url(), recipe.get_ingredients_url_parameters()))
+            if r.status_code != 200:
+                raise WrongAnswer(self.wrong_answers[1].format(self.links[1].format("GET /", "..."), r.status_code))
+            content = r.content.decode('UTF-8')
+            self.check_recipe_str(recipe, content, recipe_added, enough_ingredients)
+
+        async def test_post_recipe(self, recipe: Recipe_info):
+            r = requests.post(self.links[0].format(self.get_url()), json=str(recipe))
+            if r.status_code != 204:
+                raise WrongAnswer(self.wrong_answers[1].format(self.links[1].format("POST /", "..."), r.status_code))
+
+        async def test_empty_post_recipe(self):
+            r = requests.post(self.links[0].format(self.get_url()), json="{}")
+            if r.status_code != 400:
+                raise WrongAnswer(self.wrong_answers[8].format(self.links[1].format("POST /", "..."), r.status_code))
+
+        @dynamic_test(order=1)
+        def test1(self):
+            ExitHandler.revert_exit()
+            asyncio.get_event_loop().run_until_complete(self.test_get_recipe(self.list_recipes[0], False, False))
+            return CheckResult.correct()
+
+        @dynamic_test(order=2)
+        def test2(self):
+            ExitHandler.revert_exit()
+            asyncio.get_event_loop().run_until_complete(self.test_post_recipe(self.list_recipes[0]))
+            return CheckResult.correct()
+
+        @dynamic_test(order=3)
+        def test3(self):
+            ExitHandler.revert_exit()
+            asyncio.get_event_loop().run_until_complete(self.test_get_recipe(self.list_recipes[0], True, True))
+            return CheckResult.correct()
+
+        @dynamic_test(order=4)
+        def test4(self):
+            ExitHandler.revert_exit()
+            asyncio.get_event_loop().run_until_complete(self.test_get_recipe(self.list_recipes[1], True, False))
+            return CheckResult.correct()
+
+        @dynamic_test(order=5)
+        def test5(self):
+            ExitHandler.revert_exit()
+            asyncio.get_event_loop().run_until_complete(self.test_post_recipe(self.list_recipes[3]))
+            return CheckResult.correct()
+
+        @dynamic_test(order=6)
+        def test6(self):
+            ExitHandler.revert_exit()
+            asyncio.get_event_loop().run_until_complete(self.test_get_recipe(self.list_recipes[3], True, True))
+            return CheckResult.correct()
+
+        @dynamic_test(order=7)
+        def test7(self):
+            ExitHandler.revert_exit()
+            asyncio.get_event_loop().run_until_complete(self.test_empty_post_recipe())
+            return CheckResult.correct()
+
+
+    if __name__ == '__main__':
+        FlaskProjectTest().run_tests()
+  learner_created: false
+- name: app.py
+  visible: true
+  text: |
+    from flask import Flask
+    import sys
+
+    app = Flask(__name__)
+
+    # write your code here
+
+    # don't change the following way to run flask:
+    if __name__ == '__main__':
+        if len(sys.argv) > 1:
+            arg_host, arg_port = sys.argv[1].split(':')
+            app.run(host=arg_host, port=arg_port)
+        else:
+            app.run()
+  learner_created: false
+feedback_link: https://hyperskill.org/projects/215/stages/1077/implement#comment
+status: Unchecked
+record: -1

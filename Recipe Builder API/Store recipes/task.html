@@ -1,0 +1,145 @@
+<h5>Description</h5>
+
+<p>In the previous stage, we have improved our service, and now, it can handle a lot of recipes. But when we close our program, it deletes all the recipes. In this stage, we will implement one of the main features of the service – we will connect the service to a database to store the recipes. No recipe is left behind!</p>
+
+<p>Let's start by creating a database. In this project, we're going to use SQLAlchemy.</p>
+
+<p><div class="alert alert-warning">For testing reasons, name the database as <code class="language-python">recipes.db</code>:</p>
+
+<pre><code class="language-python">app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///recipes.db'
+db = SQLAlchemy(app)</code></pre>
+
+<p>Create the database file, if necessary.</div></p>
+
+<p>Since recipes will now be stored in the database, it would make sense to add a new endpoint that allows you to delete a recipe by its <code class="language-python">id</code>.</p>
+
+<p>Also, in this stage, add new information to the existing methods. When you get a recipe with the search method, output the <code class="language-python">recipe_id</code> along with the rest of the information. We already have methods that interact with a recipe by its <code class="language-python">id</code>, so it would be very useful to get its <code class="language-python">id</code>. The new recipe structure should be as follows:</p>
+
+<pre><code class="language-json">{
+    "id": 1,
+    "title": "Cranberry Ginger Tea",
+    "directions": "In a medium sized bowl, pour boiling water over ginger and cranberries...",
+    "ingredients":
+      [
+        { "title": "water", "measure": "cup", "amount": 2 },
+        { "title": "ginger", "measure": "cup", "amount": 0.5 },
+        { "title": "cranberries", "measure": "cup", "amount": 0.5 },
+        { "title": "nutmeg", "measure": "pinch", "amount": "1" },
+        { "title": "cranberry juice", "measure": "cup", "amount": 0.5 },
+        { "title": "mint sprigs", "measure": "each", "amount": 2 },
+      ]
+}
+</code></pre>
+
+<p><code class="language-python"><span style="color: #222222;">I</span>d</code> must be a n<span style="color: #000000;">umber.</span></p>
+
+<h5>Objectives</h5>
+
+<p>The service should support the same endpoints as in the previous stage:</p>
+
+<ul>
+	<li><code class="language-json">POST /api/recipe/new</code> receives a recipe as a JSON object and returns a JSON object with one <code class="language-python">id</code> field;</li>
+	<li><code class="language-json">GET /api/recipe/{id}</code> returns a recipe with a specified <code class="language-python">id</code> as a JSON object;</li>
+	<li><code class="language-json">GET /api/recipe/search?ingredients=ingredient1|ingredient2|...|ingredientN</code> returns a recipe as a JSON object for which the specified ingredients are sufficient.</li>
+</ul>
+
+<p>To complete the stage, you need to add the following functionality:</p>
+
+<ul>
+	<li>Store all recipes in a database permanently. After a restart, all added recipes must be available to a user;</li>
+	<li>Implement a new <code class="language-python">DELETE /api/recipe/{id}</code> endpoint. It deletes a recipe with the specified <code class="language-python">{id}</code>. The server should respond with the <code class="language-python">204 (No Content)</code> status code. If a recipe with a specified <code class="language-python">id</code> does not exist, the server should return <code class="language-python">404 (Not found)</code>;</li>
+	<li>The service should accept only valid recipes. All fields are obligatory; the <code class="language-python">title</code> and <code class="language-python">directions</code> shouldn't be blank, and the JSON arrays (<code class="language-python">ingredients</code>) should contain at least one item. If a recipe doesn't meet these requirements, the service should respond with the <code class="language-python">400 (Bad Request)</code> status code.</li>
+</ul>
+
+<h5>Examples</h5>
+
+<p><strong>Example 1: </strong><em>a </em><em>POST /api/recipe/new request</em></p>
+
+<pre><code class="language-json">{
+    "title": "Cranberry Ginger Tea",
+    "directions": "In a medium sized bowl, pour boiling water over ginger and cranberries...",
+    "ingredients":
+      [
+        { "title": "water", "measure": "cup", "amount": 2 },
+        { "title": "ginger", "measure": "cup", "amount": 0.5 },
+        { "title": "cranberries", "measure": "cup", "amount": 0.5 },
+        { "title": "nutmeg", "measure": "pinch", "amount": "1" },
+        { "title": "cranberry juice", "measure": "cup", "amount": 0.5 },
+        { "title": "mint sprigs", "measure": "each", "amount": 2 },
+      ]
+}
+</code></pre>
+
+<p><em>Response:</em></p>
+
+<pre><code class="language-json">{
+    "id": 1,
+}
+</code></pre>
+
+<p><strong>Example 2: </strong><em>response for the<strong> </strong>GET /api/recipe/1 request; note that there is no id in the response</em></p>
+
+<pre><code class="language-json">{
+    "title": "Cranberry Ginger Tea",
+    "directions": "In a medium sized bowl, pour boiling water over ginger and cranberries...",
+    "ingredients":
+      [
+        { "title": "water", "measure": "cup", "amount": 2 },
+        { "title": "ginger", "measure": "cup", "amount": 0.5 },
+        { "title": "cranberries", "measure": "cup", "amount": 0.5 },
+        { "title": "nutmeg", "measure": "pinch", "amount": "1" },
+        { "title": "cranberry juice", "measure": "cup", "amount": 0.5 },
+        { "title": "mint sprigs", "measure": "each", "amount": 2 },
+      ]
+}
+</code></pre>
+
+<p><strong>Example 3: </strong><em>response for the GET /api/recipe/search?ingredients=water,ginger,nutmeg,cranberries,nutmeg,cranberry juice,cranberry juice,mint sprigs request</em></p>
+
+<pre><code class="language-json">[
+  {
+    "id": 1,
+    "title": "Cranberry Ginger Tea",
+    "directions": "In a medium sized bowl, pour boiling water over ginger and cranberries...",
+    "ingredients":
+      [
+        { "title": "water", "measure": "cup", "amount": 2 },
+        { "title": "ginger", "measure": "cup", "amount": 0.5 },
+        { "title": "cranberries", "measure": "cup", "amount": 0.5 },
+        { "title": "nutmeg", "measure": "pinch", "amount": "1" },
+        { "title": "cranberry juice", "measure": "cup", "amount": 0.5 },
+        { "title": "mint sprigs", "measure": "each", "amount": 2 },
+      ]
+  }
+]</code></pre>
+
+<p><strong>Example 4:</strong> <em>deleting a recipe that has been added previously (a valid id)</em></p>
+
+<p><em>Request:</em></p>
+
+<p><code class="language-python">DELETE /api/recipe/1</code></p>
+
+<p><em>Status code:</em></p>
+
+<p><code class="language-python">204 (No Content)</code></p>
+
+<p><strong>Example 5: </strong><em>deleting a recipe that has been already deleted</em></p>
+
+<p><em>Request:</em></p>
+
+<p><code class="language-python">DELETE /api/recipe/1</code></p>
+
+<p><em>Status code:</em></p>
+
+<p><code class="language-python">404 (Not found)</code></p>
+
+<p><strong>Example 6: </strong><em>getting a recipe that no longer exists (deleted)</em></p>
+
+<p><em>Request:</em></p>
+
+<p><code class="language-python">GET /api/recipe/1</code></p>
+
+<p><em>Status code:</em></p>
+
+<p><code class="language-python">404 (Not found)</code></p>

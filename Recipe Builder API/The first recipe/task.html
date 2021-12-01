@@ -1,0 +1,72 @@
+<h5>Description</h5>
+
+<p>Let's start small. The project goal is to make an API that will help with searching for recipes by ingredient. To make it happen, you need to have a list of recipes and their ingredients. In the first stage, implement a simple service that supports two operations: adding (<code class="language-json">POST /api/recipe</code>) and retrieving (<code class="language-json">GET /api/recipe</code>) recipes. The service can store only one recipe at a time. Each new recipe should overwrite the previous one. We will improve the service to support multiple recipes in the next stages.</p>
+
+<p>Each recipe has a list of ingredients; each ingredient must be a string value. Yes, the structure of the recipe JSON representation is a little complicated, but we will use this information further.</p>
+
+<p>A JSON recipe has three fields: <code class="language-json">title</code>, <code class="language-json">directions</code>, and <code class="language-json">ingredients</code>. Here's an example of the <code class="language-json">Cranberry Ginger Tea</code> recipe:</p>
+
+<pre><code class="language-json">{
+    "title": "Cranberry Ginger Tea",
+    "directions": "In a medium sized bowl, pour boiling water over ginger and cranberries...",
+    "ingredients": [ "water", "ginger", "cranberries", "nutmeg", "cranberry juice", "mint sprigs" ]
+}
+</code></pre>
+
+<h5>Objectives</h5>
+
+<p>Implement two endpoints:</p>
+
+<ul>
+	<li><code class="language-json">POST /api/recipe</code> receives a recipe as a JSON object and overwrite the current one;</li>
+	<li><code class="language-json">GET /api/recipe?ingredients=ingredient1|ingredient2|...|ingredientN</code> returns the current recipe as a JSON object if the listed ingredients are sufficient.</li>
+</ul>
+
+<p>If there's no recipe, or there are not enough<span style="color: #ff4363;"><strong> </strong></span>ingredients to conclude a recipe, the server response must explain the error: <code class="language-json">{"error" : "No recipes here yet"}</code>, <code class="language-json">{"error" : "No recipe for these ingredients"}</code>.</p>
+
+<p>Make sure your API doesn't crash with <code class="language-json">Internal Server Error</code> if the request parameters are wrong. In these cases, you should return an error response (<code class="language-json">status_code = 400</code>).</p>
+
+<h5>Examples</h5>
+
+<p><strong>Example 1: </strong><em>a </em><em>POST /api/recipe request with the following body:</em></p>
+
+<pre><code class="language-json">{
+    "title": "Cranberry Ginger Tea",
+    "directions": "In a medium sized bowl, pour boiling water over ginger and cranberries...",
+    "ingredients": [ "water", "ginger", "cranberries", "nutmeg", "cranberry juice", "mint sprigs" ]
+}
+</code></pre>
+
+<p><em>Response:</em></p>
+
+<p><code class="language-json">204 (No Content)</code></p>
+
+<p><strong>Example 2: </strong><em>a </em><em>POST /api/recipe request with an empty JSON body:</em></p>
+
+<pre><code class="language-json">{ }
+</code></pre>
+
+<p><em>Response:</em></p>
+
+<p><code class="language-json">400 (No Content)</code></p>
+
+<p><strong>Example 3: </strong><em>response for a GET /api/recipe?ingredients=water|ginger|nutmeg|cranberries|nutmeg|cranberry juice|cranberry juice|mint sprigs request; the ingredients listed in the request are in the recipe; they are separated by | and can consist of several words</em><em>:</em></p>
+
+<pre><code class="language-json">{
+    "title": "Cranberry Ginger Tea",
+    "directions": "In a medium sized bowl, pour boiling water over ginger and cranberries...",
+    "ingredients": [ "water", "ginger", "cranberries", "nutmeg", "cranberry juice", "mint sprigs" ]
+}
+</code></pre>
+
+<p><strong>Example 4: </strong><em>response for a GET /api/recipe?ingredients=water|ginger|nutmeg|cranberries|nutmeg|cranberry juice|cranberry juice|mint sprigs request; the recipe has not been added yet:</em></p>
+
+<pre><code class="language-json">{
+  "error":"No recipes here yet"
+}</code></pre>
+
+<p><strong>Example 5: </strong><em>response for a GET /api/recipe?ingredients=water|ginger|nutmeg|cranberries; the specified ingredients are not enough for the recipe:</em></p>
+
+<pre><code class="language-json">{
+  "error":"No recipe for these ingredients"
+}</code></pre>

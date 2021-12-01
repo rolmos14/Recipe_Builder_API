@@ -1,0 +1,168 @@
+<h5>Description</h5>
+
+<p>Our service can store only one recipe at a time, but it is not practical. In this stage, we need to improve the service so that it can store several recipes and access recipes by a unique <code class="language-json">id</code>. We also need to make some changes to the recipe structure.</p>
+
+<p><div class="alert alert-warning">For testing reasons, an <code class="language-json">id</code> must be of integer type.</div></p>
+
+<p>The new recipe structure should include the very same 3 fields, but we need to change the type of one of them. <code class="language-json">Ingredients</code> should now be an array of dictionaries. Here's an example of the new structure:</p>
+
+<pre><code class="language-json">{
+    "title": "Cranberry Ginger Tea",
+    "directions": "In a medium sized bowl, pour boiling water over ginger and cranberries...",
+    "ingredients":
+      [
+        { "title": "water", "measure": "cup", "amount": 2 },
+        { "title": "ginger", "measure": "cup", "amount": 0.5 },
+        { "title": "cranberries", "measure": "cup", "amount": 0.5 },
+        { "title": "nutmeg", "measure": "pinch", "amount": 1 },
+        { "title": "cranberry juice", "measure": "cup", "amount": 0.5 },
+        { "title": "mint sprigs", "measure": "each", "amount": 2 },
+      ]
+}
+</code></pre>
+
+<p>It displays more information about a recipe.</p>
+
+<h5>Objectives</h5>
+
+<p>Rearrange the existing endpoints. The service should support the following:</p>
+
+<ul>
+	<li><code class="language-json">POST /api/recipe/new</code> receives a recipe as a JSON object and returns a JSON object with one <code class="language-json">id</code> field. This is a unique number by which we can identify and retrieve a recipe later. The status code should be <code class="language-json">200 (Ok)</code>;</li>
+	<li><code class="language-json">GET /api/recipe/{id}</code> returns a recipe with a specified <code class="language-json">id</code> as a JSON object, where <code class="language-json">{id}</code> is the <code class="language-json">id</code> of a recipe. The server should respond with the <code class="language-json">200 (Ok)</code> status code. If a recipe with a specified <code class="language-json">id</code> does not exist, the server should respond with <code class="language-json">404 (Not found)</code>;</li>
+	<li><code class="language-json">GET /api/recipe/search?ingredients=ingredient1|ingredient2|...|ingredientN</code> returns a <code class="language-json">list</code> of recipes as a JSON object for which the specified ingredients are sufficient.</li>
+	<li>The ingredients in the query are separated by <code class="language-json">|</code> and can consist of several words.</li>
+	<li>It's okay if there are more ingredients than you need for the recipe;</li>
+	<li>If there are no recipes or there are not enough ingredients, the server response should explain the error: <code class="language-json">{"error" : "No recipes here yet"}</code>, <code class="language-json">{"error" : "No recipe for these ingredients"}</code>.</li>
+</ul>
+
+<h5>Examples</h5>
+
+<p><strong>Example 1: </strong><em>response for the GET /api/recipe/search?ingredients=water,ginger,nutmeg,cranberries,nutmeg,cranberry juice,cranberry juice,mint sprigs request; the recipe has not been added</em></p>
+
+<pre><code class="language-java">{
+  "error":"No recipes here yet"
+}</code></pre>
+
+<p><strong>Example 2: </strong><em>a POST /api/recipe/new request with the following body</em></p>
+
+<pre><code class="language-json">{
+    "title": "Cranberry Ginger Tea",
+    "directions": "In a medium sized bowl, pour boiling water over ginger and cranberries...",
+    "ingredients":
+      [
+        { "title": "water", "measure": "cup", "amount": 2 },
+        { "title": "ginger", "measure": "cup", "amount": 0.5 },
+        { "title": "cranberries", "measure": "cup", "amount": 0.5 },
+        { "title": "nutmeg", "measure": "pinch", "amount": 1 },
+        { "title": "cranberry juice", "measure": "cup", "amount": 0.5 },
+        { "title": "mint sprigs", "measure": "each", "amount": 2 },
+      ]
+}</code></pre>
+
+<p><em>Response:</em></p>
+
+<pre><code class="language-json">{
+   "id": 1
+}</code></pre>
+
+<p><strong>Example 3: </strong><em>GET /api/recipe/1 request</em></p>
+
+<p><em>Response:</em></p>
+
+<pre><code class="language-json">{
+    "title": "Cranberry Ginger Tea",
+    "directions": "In a medium sized bowl, pour boiling water over ginger and cranberries...",
+    "ingredients":
+      [
+        { "title": "water", "measure": "cup", "amount": 2 },
+        { "title": "ginger", "measure": "cup", "amount": 0.5 },
+        { "title": "cranberries", "measure": "cup", "amount": 0.5 },
+        { "title": "nutmeg", "measure": "pinch", "amount": "1" },
+        { "title": "cranberry juice", "measure": "cup", "amount": 0.5 },
+        { "title": "mint sprigs", "measure": "each", "amount": 2 },
+      ]
+}</code></pre>
+
+<p><strong>Example 4</strong>: <em>GET /api/recipe/999 request</em></p>
+
+<p><em>Response:</em></p>
+
+<p><code class="language-json">404 (Not found)</code></p>
+
+<p><strong>Example 5</strong>: <em>GET /api/recipe/search?ingredients=water|ginger|nutmeg|cranberries|nutmeg|cranberry juice|cranberry juice|mint sprigs request</em></p>
+
+<p><em>Response:</em></p>
+
+<pre><code class="language-json">[
+  {
+    "title": "Cranberry Ginger Tea",
+    "directions": "In a medium sized bowl, pour boiling water over ginger and cranberries...",
+    "ingredients":
+      [
+        { "title": "water", "measure": "cup", "amount": 2 },
+        { "title": "ginger", "measure": "cup", "amount": 0.5 },
+        { "title": "cranberries", "measure": "cup", "amount": 0.5 },
+        { "title": "nutmeg", "measure": "pinch", "amount": "1" },
+        { "title": "cranberry juice", "measure": "cup", "amount": 0.5 },
+        { "title": "mint sprigs", "measure": "each", "amount": 2 },
+      ]
+  }
+]</code></pre>
+
+<p><strong>Example 6: </strong><em>response for thre GET /api/recipe/search?ingredients=water|ginger|nutmeg|cranberries; the specified ingredients are not enough for the recipe</em></p>
+
+<pre><code class="language-json">{
+  "error":"No recipe for these ingredients"
+}</code></pre>
+
+<p><strong> Example 7: </strong><em>a </em><em>POST /api/recipe/new request with the following body</em></p>
+
+<pre><code class="language-json">{
+    "title": "Ginger Root Tea",
+    "directions": "Prepare the fresh ginger by peeling it and slicing it thinly to maximize ...",
+    "ingredients":
+      [
+        { "title": "water", "measure": "cup", "amount": 2 },
+        { "title": "ginger", "measure": "cup", "amount": 0.5 },
+        { "title": "fresh lime juice", "measure": "tablespoon", "amount": 1 },
+        { "title": "honey", "measure": "tablespoons", "amount": 2 },
+      ]
+}</code></pre>
+
+<p><em>Response:</em></p>
+
+<pre><code class="language-json">{
+   "id": 2
+}</code></pre>
+
+<p><strong>Example 8</strong>: <em>GET /api/recipe/search?ingredients=water|ginger|nutmeg|cranberries|nutmeg|cranberry juice|cranberry juice|mint sprigs|fresh lime juice|honey request</em></p>
+
+<p><em>Response:</em></p>
+
+<pre><code class="language-json">[
+  {
+    "title": "Cranberry Ginger Tea",
+    "directions": "In a medium sized bowl, pour boiling water over ginger and cranberries...",
+    "ingredients":
+      [
+        { "title": "water", "measure": "cup", "amount": 2 },
+        { "title": "ginger", "measure": "cup", "amount": 0.5 },
+        { "title": "cranberries", "measure": "cup", "amount": 0.5 },
+        { "title": "nutmeg", "measure": "pinch", "amount": "1" },
+        { "title": "cranberry juice", "measure": "cup", "amount": 0.5 },
+        { "title": "mint sprigs", "measure": "each", "amount": 2 },
+      ]
+  }
+  {
+    "title": "Ginger Root Tea",
+    "directions": "Prepare the fresh ginger by peeling it and slicing it thinly to maximize ...",
+    "ingredients":
+      [
+        { "title": "water", "measure": "cup", "amount": 2 },
+        { "title": "ginger", "measure": "cup", "amount": 0.5 },
+        { "title": "fresh lime juice", "measure": "tablespoon", "amount": 1 },
+        { "title": "honey", "measure": "tablespoons", "amount": 2 },
+      ]
+  }
+]</code></pre>
